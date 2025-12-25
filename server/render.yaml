@@ -1,0 +1,21 @@
+# Render 部署配置文件
+# 文档: https://render.com/docs/blueprint-spec
+
+services:
+  - type: web
+    name: dora-server
+    runtime: node
+    region: singapore  # 可选: oregon, frankfurt, singapore
+    plan: free  # free, starter ($7/月), standard ($25/月)
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: DATABASE_URL
+        value: file:./prod.db
+      - key: JWT_SECRET
+        generateValue: true  # Render 自动生成随机值

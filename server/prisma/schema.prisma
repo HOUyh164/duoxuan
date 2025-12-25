@@ -1,0 +1,45 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  password  String
+  role      String   @default("user") // "user" | "admin"
+  createdAt DateTime @default(now())
+  orders    Order[]
+}
+
+model Card {
+  id        Int       @id @default(autoincrement())
+  cardKey   String    @unique
+  planType  String    // "day" | "week" | "month" | "lifetime"
+  status    String    @default("unused") // "unused" | "used" | "expired"
+  orderId   Int?
+  order     Order?    @relation(fields: [orderId], references: [id])
+  createdAt DateTime  @default(now())
+  usedAt    DateTime?
+}
+
+model Order {
+  id            Int      @id @default(autoincrement())
+  userId        Int
+  user          User     @relation(fields: [userId], references: [id])
+  planType      String   // "day" | "week" | "month" | "lifetime"
+  amount        Float
+  status        String   @default("pending") // "pending" | "paid" | "cancelled" | "refunded"
+  paymentMethod String?
+  createdAt     DateTime @default(now())
+  cards         Card[]
+}
+
+

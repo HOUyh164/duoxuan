@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>支付訂單 - DORA</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #a855f7;
+            --primary-light: #c084fc;
+            --primary-dark: #7c3aed;
+            --cyan: #22d3ee;
+            --bg-dark: #0a0a12;
+            --bg-card: #12121a;
+            --text-primary: #ffffff;
+            --text-secondary: #a1a1aa;
+            --text-muted: #71717a;
+            --border-color: rgba(168, 85, 247, 0.2);
+            --success: #22c55e;
+            --font-display: 'Orbitron', sans-serif;
+            --font-body: 'Noto Sans TC', sans-serif;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: var(--font-body);
+            background: var(--bg-dark);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+        
+        .payment-container {
+            width: 100%;
+            max-width: 480px;
+        }
+        
+        .payment-card {
+            background: var(--bg-card);
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            padding: 2.5rem;
+            text-align: center;
+        }
+        
+        .logo {
+            font-family: var(--font-display);
+            font-size: 2rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--primary-light), var(--cyan));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 0.5rem;
+        }
+        
+        .subtitle {
+            color: var(--text-secondary);
+            margin-bottom: 2rem;
+        }
+        
+        /* 載入狀態 */
+        .loading {
+            padding: 3rem;
+        }
+        
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid var(--border-color);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        /* 訂單信息 */
+        .order-info {
+            background: rgba(168, 85, 247, 0.1);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .order-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .order-row:last-child {
+            border-bottom: none;
+        }
+        
+        .order-label {
+            color: var(--text-secondary);
+        }
+        
+        .order-value {
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+        
+        .order-value.price {
+            font-family: var(--font-display);
+            font-size: 1.5rem;
+            color: var(--primary-light);
+        }
+        
+        /* 按鈕 */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            width: 100%;
+            padding: 1rem 2rem;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: none;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 20px rgba(168, 85, 247, 0.4);
+        }
+        
+        .btn-primary:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .btn-secondary {
+            background: transparent;
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            margin-top: 1rem;
+        }
+        
+        .btn-secondary:hover {
+            background: rgba(168, 85, 247, 0.1);
+        }
+        
+        /* 成功狀態 */
+        .success-container {
+            display: none;
+        }
+        
+        .success-icon {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, var(--success), #16a34a);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.5rem;
+        }
+        
+        .success-icon svg {
+            width: 40px;
+            height: 40px;
+            color: white;
+        }
+        
+        .success-title {
+            font-family: var(--font-display);
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+            color: var(--success);
+        }
+        
+        .success-message {
+            color: var(--text-secondary);
+            margin-bottom: 2rem;
+        }
+        
+        /* 卡密顯示 */
+        .card-key-container {
+            background: var(--bg-dark);
+            border: 2px dashed var(--primary);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .card-key-label {
+            font-size: 0.875rem;
+            color: var(--text-muted);
+            margin-bottom: 0.5rem;
+        }
+        
+        .card-key {
+            font-family: var(--font-display);
+            font-size: 1.25rem;
+            color: var(--cyan);
+            letter-spacing: 0.1em;
+            word-break: break-all;
+        }
+        
+        .copy-btn {
+            margin-top: 1rem;
+            padding: 0.75rem 1.5rem;
+            background: rgba(34, 211, 238, 0.2);
+            border: 1px solid var(--cyan);
+            border-radius: 8px;
+            color: var(--cyan);
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .copy-btn:hover {
+            background: rgba(34, 211, 238, 0.3);
+        }
+        
+        .copy-btn.copied {
+            background: var(--success);
+            border-color: var(--success);
+            color: white;
+        }
+        
+        /* 錯誤狀態 */
+        .error-container {
+            display: none;
+        }
+        
+        .error-icon {
+            width: 80px;
+            height: 80px;
+            background: rgba(239, 68, 68, 0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.5rem;
+        }
+        
+        .error-icon svg {
+            width: 40px;
+            height: 40px;
+            color: #ef4444;
+        }
+        
+        .error-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: #ef4444;
+        }
+        
+        .error-message {
+            color: var(--text-secondary);
+            margin-bottom: 2rem;
+        }
+        
+        /* 警告提示 */
+        .warning-box {
+            background: rgba(245, 158, 11, 0.1);
+            border: 1px solid rgba(245, 158, 11, 0.3);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+            font-size: 0.875rem;
+            color: #f59e0b;
+        }
+        
+        .hidden {
+            display: none !important;
+        }
+        
+        /* 手機端適配 */
+        @media (max-width: 640px) {
+            .payment-container {
+                padding: 1rem;
+            }
+            
+            .payment-card {
+                padding: 1.5rem;
+            }
+            
+            .payment-title {
+                font-size: 1.25rem;
+            }
+            
+            .order-info-grid {
+                grid-template-columns: 1fr;
+                gap: 0.75rem;
+            }
+            
+            .order-value.price {
+                font-size: 1.25rem;
+            }
+            
+            .btn {
+                padding: 0.875rem 1.5rem;
+            }
+            
+            .card-key-display {
+                font-size: 1rem;
+                word-break: break-all;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="payment-container">
+        <div class="payment-card">
+            <h1 class="logo">DORA</h1>
+            <p class="subtitle">訂單支付</p>
+            
+            <!-- 載入狀態 -->
+            <div id="loading-state" class="loading">
+                <div class="spinner"></div>
+                <p>載入訂單信息...</p>
+            </div>
+            
+            <!-- 支付表單 -->
+            <div id="payment-form" class="hidden">
+                <div class="order-info">
+                    <div class="order-row">
+                        <span class="order-label">訂單編號</span>
+                        <span class="order-value" id="order-id">#---</span>
+                    </div>
+                    <div class="order-row">
+                        <span class="order-label">方案</span>
+                        <span class="order-value" id="order-plan">---</span>
+                    </div>
+                    <div class="order-row">
+                        <span class="order-label">金額</span>
+                        <span class="order-value price" id="order-amount">NT$ ---</span>
+                    </div>
+                </div>
+                
+                <div class="warning-box">
+                    ⚠️ 這是模擬支付頁面，點擊下方按鈕將直接完成支付（測試用）
+                </div>
+                
+                <button id="pay-btn" class="btn btn-primary">
+                    確認支付
+                </button>
+                
+                <button onclick="window.location.href='/'" class="btn btn-secondary">
+                    取消
+                </button>
+            </div>
+            
+            <!-- 成功狀態 -->
+            <div id="success-state" class="success-container">
+                <div class="success-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                        <polyline points="20 6 9 17 4 12"></polyline>
+                    </svg>
+                </div>
+                <h2 class="success-title">支付成功！</h2>
+                <p class="success-message">您的卡密已生成，請妥善保存</p>
+                
+                <div class="card-key-container">
+                    <p class="card-key-label">您的卡密</p>
+                    <p class="card-key" id="card-key">---</p>
+                    <button class="copy-btn" id="copy-btn">複製卡密</button>
+                </div>
+                
+                <button onclick="window.location.href='/'" class="btn btn-primary">
+                    返回首頁
+                </button>
+            </div>
+            
+            <!-- 錯誤狀態 -->
+            <div id="error-state" class="error-container">
+                <div class="error-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <line x1="15" y1="9" x2="9" y2="15"></line>
+                        <line x1="9" y1="9" x2="15" y2="15"></line>
+                    </svg>
+                </div>
+                <h2 class="error-title" id="error-title">出錯了</h2>
+                <p class="error-message" id="error-message">---</p>
+                
+                <button onclick="window.location.href='/'" class="btn btn-primary">
+                    返回首頁
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = '/api';
+        let authToken = localStorage.getItem('doraToken');
+        let currentOrder = null;
+        
+        // DOM 元素
+        const loadingState = document.getElementById('loading-state');
+        const paymentForm = document.getElementById('payment-form');
+        const successState = document.getElementById('success-state');
+        const errorState = document.getElementById('error-state');
+        const payBtn = document.getElementById('pay-btn');
+        const copyBtn = document.getElementById('copy-btn');
+        
+        // 方案名稱映射
+        const planLabels = {
+            day: '天卡 (1天)',
+            week: '周卡 (7天)',
+            month: '月卡 (30天)',
+            lifetime: '永久卡'
+        };
+        
+        // 初始化
+        document.addEventListener('DOMContentLoaded', () => {
+            // 檢查登入狀態
+            if (!authToken) {
+                showError('未登入', '請先登入後再進行支付');
+                return;
+            }
+            
+            // 從 URL 獲取訂單 ID
+            const urlParams = new URLSearchParams(window.location.search);
+            const orderId = urlParams.get('order');
+            
+            if (!orderId) {
+                showError('無效的訂單', '未找到訂單信息');
+                return;
+            }
+            
+            // 載入訂單信息
+            loadOrder(orderId);
+        });
+        
+        // 載入訂單
+        async function loadOrder(orderId) {
+            try {
+                const res = await fetch(`${API_BASE}/orders/${orderId}`, {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                
+                if (!res.ok) {
+                    const data = await res.json();
+                    throw new Error(data.error || '載入訂單失敗');
+                }
+                
+                const data = await res.json();
+                currentOrder = data.order;
+                
+                // 檢查訂單狀態
+                if (currentOrder.status === 'paid') {
+                    // 已支付，直接顯示卡密
+                    if (currentOrder.cards && currentOrder.cards.length > 0) {
+                        showSuccess(currentOrder.cards[0].cardKey);
+                    } else {
+                        showError('訂單異常', '訂單已支付但未找到卡密');
+                    }
+                    return;
+                }
+                
+                if (currentOrder.status !== 'pending') {
+                    showError('訂單狀態異常', '此訂單無法支付');
+                    return;
+                }
+                
+                // 顯示訂單信息
+                showPaymentForm();
+                
+            } catch (error) {
+                showError('載入失敗', error.message);
+            }
+        }
+        
+        // 顯示支付表單
+        function showPaymentForm() {
+            loadingState.classList.add('hidden');
+            paymentForm.classList.remove('hidden');
+            
+            document.getElementById('order-id').textContent = `#${currentOrder.id}`;
+            document.getElementById('order-plan').textContent = planLabels[currentOrder.planType] || currentOrder.planType;
+            document.getElementById('order-amount').textContent = `NT$ ${currentOrder.amount.toLocaleString()}`;
+            
+            // 綁定支付按鈕
+            payBtn.addEventListener('click', handlePay);
+        }
+        
+        // 處理支付
+        async function handlePay() {
+            payBtn.disabled = true;
+            payBtn.textContent = '處理中...';
+            
+            try {
+                const res = await fetch(`${API_BASE}/orders/${currentOrder.id}/pay`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`
+                    }
+                });
+                
+                const data = await res.json();
+                
+                if (!res.ok) {
+                    throw new Error(data.error || '支付失敗');
+                }
+                
+                // 支付成功
+                showSuccess(data.card.cardKey);
+                
+            } catch (error) {
+                payBtn.disabled = false;
+                payBtn.textContent = '確認支付';
+                showError('支付失敗', error.message);
+            }
+        }
+        
+        // 顯示成功
+        function showSuccess(cardKey) {
+            loadingState.classList.add('hidden');
+            paymentForm.classList.add('hidden');
+            errorState.classList.add('hidden');
+            successState.style.display = 'block';
+            
+            document.getElementById('card-key').textContent = cardKey;
+            
+            // 複製按鈕
+            copyBtn.addEventListener('click', () => {
+                navigator.clipboard.writeText(cardKey).then(() => {
+                    copyBtn.textContent = '已複製！';
+                    copyBtn.classList.add('copied');
+                    setTimeout(() => {
+                        copyBtn.textContent = '複製卡密';
+                        copyBtn.classList.remove('copied');
+                    }, 2000);
+                });
+            });
+        }
+        
+        // 顯示錯誤
+        function showError(title, message) {
+            loadingState.classList.add('hidden');
+            paymentForm.classList.add('hidden');
+            successState.style.display = 'none';
+            errorState.style.display = 'block';
+            
+            document.getElementById('error-title').textContent = title;
+            document.getElementById('error-message').textContent = message;
+        }
+    </script>
+</body>
+</html>
+
+
