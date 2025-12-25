@@ -1,9 +1,93 @@
 const express = require('express');
+const bcrypt = require('bcryptjs');
 const { PrismaClient } = require('@prisma/client');
 const { authenticateToken, requireAdmin } = require('../middleware/auth');
 
 const router = express.Router();
 const prisma = new PrismaClient();
+
+// 初始化管理员账户（仅在没有管理员时可用）
+router.post('/init', async (req, res) => {
+  try {
+    // 检查是否已有管理员
+    const existingAdmin = await prisma.user.findFirst({
+      where: { role: 'admin' }
+    });
+    
+    if (existingAdmin) {
+      return res.status(400).json({ 
+        error: '管理员账户已存在，无法重复初始化',
+        message: '如需重置管理员，请联系技术支持'
+      });
+    }
+    
+    // 从环境变量或使用默认值
+    const adminEmail = process.env.ADMIN_EMAIL || 'admin@dora.com';
+    const adminPassword = process.env.ADMIN_PASSWORD || 'Admin123456';
+    
+    // 检查邮箱是否已被注册
+    const existingUser = await prisma.user.findUnique({
+      where: { email: adminEmail }
+    });
+    
+    if (existingUser) {
+      // 如果用户已存在，升级为管理员
+      await prisma.user.update({
+        where: { email: adminEmail },
+        data: { role: 'admin' }
+      });
+      
+      return res.json({
+        message: '已将现有用户升级为管理员',
+        admin: {
+          email: adminEmail,
+          note: '请使用原有密码登录'
+        }
+      });
+    }
+    
+    // 创建新管理员账户
+    const hashedPassword = await bcrypt.hash(adminPassword, 10);
+    
+    const admin = await prisma.user.create({
+      data: {
+        email: adminEmail,
+        password: hashedPassword,
+        role: 'admin'
+      }
+    });
+    
+    res.status(201).json({
+      message: '管理员账户创建成功！',
+      admin: {
+        email: adminEmail,
+        password: adminPassword,
+        note: '请登录后立即修改密码！'
+      },
+      loginUrl: '/admin'
+    });
+  } catch (error) {
+    console.error('Init admin error:', error);
+    res.status(500).json({ error: '初始化管理员失败' });
+  }
+});
+
+// 检查是否有管理员（公开接口，用于判断是否需要初始化）
+router.get('/check-init', async (req, res) => {
+  try {
+    const adminCount = await prisma.user.count({
+      where: { role: 'admin' }
+    });
+    
+    res.json({
+      initialized: adminCount > 0,
+      message: adminCount > 0 ? '系统已初始化' : '需要初始化管理员账户'
+    });
+  } catch (error) {
+    console.error('Check init error:', error);
+    res.status(500).json({ error: '检查失败' });
+  }
+});
 
 // 获取统计数据
 router.get('/stats', authenticateToken, requireAdmin, async (req, res) => {
