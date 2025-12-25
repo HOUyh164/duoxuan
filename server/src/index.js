@@ -1,6 +1,8 @@
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
+const bcrypt = require('bcryptjs');
+const { PrismaClient } = require('@prisma/client');
 const config = require('./config');
 
 // Import routes
@@ -10,6 +12,58 @@ const orderRoutes = require('./routes/orders');
 const adminRoutes = require('./routes/admin');
 
 const app = express();
+const prisma = new PrismaClient();
+
+// 启动时自动创建管理员账户
+async function initializeAdmin() {
+  try {
+    // 硬编码的管理员账户
+    const ADMIN_EMAIL = 'dora@gmail.com';
+    const ADMIN_PASSWORD = 'doraai';
+    
+    // 检查是否已有管理员
+    const existingAdmin = await prisma.user.findFirst({
+      where: { role: 'admin' }
+    });
+    
+    if (existingAdmin) {
+      console.log('✅ 管理员账户已存在:', existingAdmin.email);
+      return;
+    }
+    
+    // 检查该邮箱是否存在
+    const existingUser = await prisma.user.findUnique({
+      where: { email: ADMIN_EMAIL }
+    });
+    
+    if (existingUser) {
+      // 升级为管理员
+      await prisma.user.update({
+        where: { email: ADMIN_EMAIL },
+        data: { role: 'admin' }
+      });
+      console.log('✅ 已将用户升级为管理员:', ADMIN_EMAIL);
+    } else {
+      // 创建新管理员
+      const hashedPassword = await bcrypt.hash(ADMIN_PASSWORD, 10);
+      await prisma.user.create({
+        data: {
+          email: ADMIN_EMAIL,
+          password: hashedPassword,
+          role: 'admin'
+        }
+      });
+      console.log('✅ 管理员账户已创建');
+      console.log('📧 邮箱:', ADMIN_EMAIL);
+      console.log('🔑 密码:', ADMIN_PASSWORD);
+    }
+  } catch (error) {
+    console.error('❌ 初始化管理员失败:', error.message);
+  }
+}
+
+// 启动时初始化
+initializeAdmin();
 
 // Middleware
 app.use(cors());
