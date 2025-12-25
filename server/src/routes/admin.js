@@ -22,8 +22,8 @@ router.post('/init', async (req, res) => {
     }
     
     // 从环境变量或使用默认值
-    const adminEmail = process.env.ADMIN_EMAIL || 'admin@dora.com';
-    const adminPassword = process.env.ADMIN_PASSWORD || 'Admin123456';
+    const adminEmail = process.env.ADMIN_EMAIL || 'dora@gmail.com';
+    const adminPassword = process.env.ADMIN_PASSWORD || 'doraai';
     
     // 检查邮箱是否已被注册
     const existingUser = await prisma.user.findUnique({
