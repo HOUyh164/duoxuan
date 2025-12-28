@@ -8,7 +8,7 @@ module.exports = {
   // 方案定价 (NT$)
   pricing: {
     day: 120,     // 日卡
-    week: 0,      // 即将推出
+    week: 400,    // 周卡
     month: 1400,
     lifetime: 8000
   },
