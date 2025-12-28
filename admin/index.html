@@ -50,6 +50,21 @@
                     </svg>
                     <span>儀表板</span>
                 </a>
+                <a href="#" class="nav-item" data-page="games">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <polygon points="10 8 16 12 10 16 10 8"></polygon>
+                    </svg>
+                    <span>遊戲管理</span>
+                </a>
+                <a href="#" class="nav-item" data-page="products">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
+                        <line x1="3" y1="6" x2="21" y2="6"></line>
+                        <path d="M16 10a4 4 0 0 1-8 0"></path>
+                    </svg>
+                    <span>商品管理</span>
+                </a>
                 <a href="#" class="nav-item" data-page="cards">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <rect x="3" y="4" width="18" height="16" rx="2"></rect>
@@ -74,6 +89,13 @@
                         <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
                     </svg>
                     <span>用戶管理</span>
+                </a>
+                <a href="#" class="nav-item" data-page="config">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="3"></circle>
+                        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                    </svg>
+                    <span>網站配置</span>
                 </a>
             </nav>
             <div class="sidebar-footer">
@@ -165,6 +187,74 @@
                 </div>
             </section>
 
+            <!-- 遊戲管理頁面 -->
+            <section id="games-page" class="content-page hidden">
+                <div class="page-header">
+                    <h2>遊戲管理</h2>
+                    <button id="add-game-btn" class="btn btn-primary">新增遊戲</button>
+                </div>
+
+                <div class="table-container">
+                    <table id="games-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>圖標</th>
+                                <th>名稱</th>
+                                <th>標識符</th>
+                                <th>商品數</th>
+                                <th>狀態</th>
+                                <th>排序</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- 動態載入 -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- 商品管理頁面 -->
+            <section id="products-page" class="content-page hidden">
+                <div class="page-header">
+                    <h2>商品管理</h2>
+                    <button id="add-product-btn" class="btn btn-primary">新增商品</button>
+                </div>
+
+                <div class="filters">
+                    <select id="filter-product-game">
+                        <option value="">全部遊戲</option>
+                    </select>
+                    <select id="filter-product-status">
+                        <option value="">全部狀態</option>
+                        <option value="true">已啟用</option>
+                        <option value="false">已停用</option>
+                    </select>
+                </div>
+
+                <div class="table-container">
+                    <table id="products-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>遊戲</th>
+                                <th>名稱</th>
+                                <th>價格</th>
+                                <th>時長</th>
+                                <th>徽章</th>
+                                <th>狀態</th>
+                                <th>排序</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- 動態載入 -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
             <!-- 卡密管理頁面 -->
             <section id="cards-page" class="content-page hidden">
                 <div class="page-header">
@@ -172,33 +262,10 @@
                     <button id="upload-cards-btn" class="btn btn-primary">上傳卡密</button>
                 </div>
 
-                <!-- 上傳卡密彈窗 -->
-                <div id="upload-modal" class="modal hidden">
-                    <div class="modal-content">
-                        <h3>上傳卡密</h3>
-                        <form id="upload-form">
-                            <div class="form-group">
-                                <label for="plan-type">方案類型</label>
-                                <select id="plan-type" name="planType" required>
-                                    <option value="day">天卡</option>
-                                    <option value="week">周卡</option>
-                                    <option value="month">月卡</option>
-                                    <option value="lifetime">永久卡</option>
-                                </select>
-                            </div>
-                            <div class="form-group">
-                                <label for="card-keys">卡密列表（每行一個）</label>
-                                <textarea id="card-keys" name="cardKeys" rows="10" required placeholder="每行輸入一個卡密&#10;例如：&#10;KEY-001-ABC&#10;KEY-002-DEF&#10;KEY-003-GHI"></textarea>
-                            </div>
-                            <div class="modal-actions">
-                                <button type="button" class="btn btn-secondary" id="cancel-upload">取消</button>
-                                <button type="submit" class="btn btn-primary">上傳</button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-
                 <div class="filters">
+                    <select id="filter-card-game">
+                        <option value="">全部遊戲</option>
+                    </select>
                     <select id="filter-card-status">
                         <option value="">全部狀態</option>
                         <option value="unused">未使用</option>
@@ -220,6 +287,7 @@
                             <tr>
                                 <th>ID</th>
                                 <th>卡密</th>
+                                <th>遊戲</th>
                                 <th>方案</th>
                                 <th>狀態</th>
                                 <th>建立時間</th>
@@ -291,11 +359,272 @@
                 </div>
                 <div id="users-pagination" class="pagination"></div>
             </section>
+
+            <!-- 網站配置頁面 -->
+            <section id="config-page" class="content-page hidden">
+                <div class="page-header">
+                    <h2>網站配置</h2>
+                </div>
+
+                <div class="config-tabs">
+                    <button class="config-tab active" data-config-tab="global">全局配置</button>
+                    <button class="config-tab" data-config-tab="game">遊戲配置</button>
+                </div>
+
+                <!-- 全局配置 -->
+                <div class="config-section" id="config-global">
+                    <form id="global-config-form" class="config-form">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="config-siteName">網站名稱</label>
+                                <input type="text" id="config-siteName" name="siteName" placeholder="DORA">
+                            </div>
+                            <div class="form-group">
+                                <label for="config-siteTagline">網站標語</label>
+                                <input type="text" id="config-siteTagline" name="siteTagline" placeholder="頂級遊戲輔助">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="config-heroTitle">首頁主標題</label>
+                                <input type="text" id="config-heroTitle" name="heroTitle" placeholder="征服戰場">
+                            </div>
+                            <div class="form-group">
+                                <label for="config-heroSubtitle">首頁副標題</label>
+                                <textarea id="config-heroSubtitle" name="heroSubtitle" rows="2" placeholder="業界頂尖的 AI 輔助技術..."></textarea>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="config-discordUrl">Discord 連結</label>
+                                <input type="text" id="config-discordUrl" name="discordUrl" placeholder="https://discord.gg/xxx">
+                            </div>
+                            <div class="form-group">
+                                <label for="config-discordOnline">Discord 在線人數</label>
+                                <input type="text" id="config-discordOnline" name="discordOnline" placeholder="100+">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="config-discordMembers">Discord 成員數</label>
+                                <input type="text" id="config-discordMembers" name="discordMembers" placeholder="1000+">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="config-footerCopyright">頁腳版權</label>
+                            <input type="text" id="config-footerCopyright" name="footerCopyright" placeholder="© 2024 DORA. All rights reserved.">
+                        </div>
+                        <div class="form-group">
+                            <label for="config-footerDisclaimer">免責聲明</label>
+                            <textarea id="config-footerDisclaimer" name="footerDisclaimer" rows="2" placeholder="免責聲明..."></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary">保存配置</button>
+                    </form>
+                </div>
+
+                <!-- 遊戲配置 -->
+                <div class="config-section hidden" id="config-game">
+                    <div class="form-group">
+                        <label for="config-game-select">選擇遊戲</label>
+                        <select id="config-game-select">
+                            <option value="">請選擇遊戲</option>
+                        </select>
+                    </div>
+                    <form id="game-config-form" class="config-form hidden">
+                        <div class="form-group">
+                            <label for="config-game-heroTitle">遊戲頁主標題</label>
+                            <input type="text" id="config-game-heroTitle" name="heroTitle" placeholder="征服戰場">
+                        </div>
+                        <div class="form-group">
+                            <label for="config-game-heroSubtitle">遊戲頁副標題</label>
+                            <textarea id="config-game-heroSubtitle" name="heroSubtitle" rows="2" placeholder="遊戲專用輔助..."></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="config-game-features">功能介紹（JSON）</label>
+                            <textarea id="config-game-features" name="features" rows="6" placeholder='[{"title":"功能1","desc":"描述1"}]'></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary">保存遊戲配置</button>
+                    </form>
+                </div>
+            </section>
         </main>
+    </div>
+
+    <!-- 遊戲編輯彈窗 -->
+    <div id="game-modal" class="modal hidden">
+        <div class="modal-content modal-lg">
+            <h3 id="game-modal-title">新增遊戲</h3>
+            <form id="game-form">
+                <input type="hidden" id="game-id" name="id">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="game-name">遊戲名稱 *</label>
+                        <input type="text" id="game-name" name="name" required placeholder="VALORANT">
+                    </div>
+                    <div class="form-group">
+                        <label for="game-slug">標識符 *</label>
+                        <input type="text" id="game-slug" name="slug" required placeholder="valorant" pattern="[a-z0-9-]+" title="只能包含小寫字母、數字和連字符">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="game-description">遊戲描述</label>
+                    <textarea id="game-description" name="description" rows="3" placeholder="輸入遊戲描述..."></textarea>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="game-icon">圖標 URL</label>
+                        <input type="text" id="game-icon" name="icon" placeholder="https://...">
+                    </div>
+                    <div class="form-group">
+                        <label for="game-coverImage">封面圖片 URL</label>
+                        <input type="text" id="game-coverImage" name="coverImage" placeholder="https://...">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="game-themeColor">主題色</label>
+                        <input type="color" id="game-themeColor" name="themeColor" value="#ff4655">
+                    </div>
+                    <div class="form-group">
+                        <label for="game-sortOrder">排序順序</label>
+                        <input type="number" id="game-sortOrder" name="sortOrder" value="0" min="0">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="game-isActive" name="isActive" checked>
+                        啟用此遊戲
+                    </label>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closeGameModal()">取消</button>
+                    <button type="submit" class="btn btn-primary">保存</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 商品編輯彈窗 -->
+    <div id="product-modal" class="modal hidden">
+        <div class="modal-content modal-lg">
+            <h3 id="product-modal-title">新增商品</h3>
+            <form id="product-form">
+                <input type="hidden" id="product-id" name="id">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="product-gameId">所屬遊戲 * <a href="#" onclick="navigateTo('games'); return false;" style="font-size: 0.8rem; float: right; color: var(--primary);">+ 管理遊戲</a></label>
+                        <select id="product-gameId" name="gameId" required>
+                            <option value="">請選擇遊戲</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="product-name">商品名稱 *</label>
+                        <input type="text" id="product-name" name="name" required placeholder="天卡">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="product-planType">方案類型 *</label>
+                        <select id="product-planType" name="planType" required>
+                            <option value="day">天卡</option>
+                            <option value="week">周卡</option>
+                            <option value="month">月卡</option>
+                            <option value="lifetime">永久卡</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="product-price">價格 *</label>
+                        <input type="number" id="product-price" name="price" required min="0" step="0.01" placeholder="120">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="product-currency">貨幣單位</label>
+                        <input type="text" id="product-currency" name="currency" value="NT$" placeholder="NT$">
+                    </div>
+                    <div class="form-group">
+                        <label for="product-duration">時長（小時）</label>
+                        <input type="number" id="product-duration" name="duration" min="-1" placeholder="24（永久填 -1）">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="product-description">商品描述</label>
+                    <textarea id="product-description" name="description" rows="2" placeholder="商品描述..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="product-features">功能特性（每行一個）</label>
+                    <textarea id="product-features" name="features" rows="4" placeholder="全部功能解鎖&#10;24 小時使用時間&#10;技術支援"></textarea>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="product-badge">徽章文字</label>
+                        <input type="text" id="product-badge" name="badge" placeholder="熱門方案">
+                    </div>
+                    <div class="form-group">
+                        <label for="product-sortOrder">排序順序</label>
+                        <input type="number" id="product-sortOrder" name="sortOrder" value="0" min="0">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="product-isPopular" name="isPopular">
+                            熱門商品
+                        </label>
+                    </div>
+                    <div class="form-group">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="product-isPremium" name="isPremium">
+                            高級商品
+                        </label>
+                    </div>
+                    <div class="form-group">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="product-isActive" name="isActive" checked>
+                            啟用商品
+                        </label>
+                    </div>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closeProductModal()">取消</button>
+                    <button type="submit" class="btn btn-primary">保存</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 上傳卡密彈窗 -->
+    <div id="upload-modal" class="modal hidden">
+        <div class="modal-content">
+            <h3>上傳卡密</h3>
+            <form id="upload-form">
+                <div class="form-group">
+                    <label for="upload-gameId">所屬遊戲</label>
+                    <select id="upload-gameId" name="gameId">
+                        <option value="">不關聯遊戲</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="plan-type">方案類型</label>
+                    <select id="plan-type" name="planType" required>
+                        <option value="day">天卡</option>
+                        <option value="week">周卡</option>
+                        <option value="month">月卡</option>
+                        <option value="lifetime">永久卡</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="card-keys">卡密列表（每行一個）</label>
+                    <textarea id="card-keys" name="cardKeys" rows="10" required placeholder="每行輸入一個卡密&#10;例如：&#10;KEY-001-ABC&#10;KEY-002-DEF&#10;KEY-003-GHI"></textarea>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary" id="cancel-upload">取消</button>
+                    <button type="submit" class="btn btn-primary">上傳</button>
+                </div>
+            </form>
+        </div>
     </div>
 
     <script src="js/admin.js"></script>
 </body>
 </html>
-
-

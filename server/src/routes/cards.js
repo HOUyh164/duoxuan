@@ -8,11 +8,13 @@ const prisma = new PrismaClient();
 // 获取卡密列表 (管理员)
 router.get('/', authenticateToken, requireAdmin, async (req, res) => {
   try {
-    const { status, planType, page = 1, limit = 20 } = req.query;
+    const { status, planType, gameId, productId, page = 1, limit = 20 } = req.query;
     
     const where = {};
     if (status) where.status = status;
     if (planType) where.planType = planType;
+    if (gameId) where.gameId = parseInt(gameId);
+    if (productId) where.productId = parseInt(productId);
     
     const [cards, total] = await Promise.all([
       prisma.card.findMany({
@@ -27,6 +29,12 @@ router.get('/', authenticateToken, requireAdmin, async (req, res) => {
                 select: { email: true }
               }
             }
+          },
+          game: {
+            select: { id: true, name: true, slug: true }
+          },
+          product: {
+            select: { id: true, name: true, planType: true }
           }
         }
       }),
@@ -51,7 +59,7 @@ router.get('/', authenticateToken, requireAdmin, async (req, res) => {
 // 批量上传卡密 (管理员)
 router.post('/upload', authenticateToken, requireAdmin, async (req, res) => {
   try {
-    const { planType, cardKeys } = req.body;
+    const { planType, cardKeys, gameId, productId } = req.body;
     
     // 验证方案类型
     if (!planType) {
@@ -61,6 +69,26 @@ router.post('/upload', authenticateToken, requireAdmin, async (req, res) => {
     const validPlanTypes = ['day', 'week', 'month', 'lifetime'];
     if (!validPlanTypes.includes(planType)) {
       return res.status(400).json({ error: '无效的方案类型' });
+    }
+    
+    // 验证游戏ID
+    if (gameId) {
+      const game = await prisma.game.findUnique({
+        where: { id: parseInt(gameId) }
+      });
+      if (!game) {
+        return res.status(404).json({ error: '游戏不存在' });
+      }
+    }
+    
+    // 验证商品ID
+    if (productId) {
+      const product = await prisma.product.findUnique({
+        where: { id: parseInt(productId) }
+      });
+      if (!product) {
+        return res.status(404).json({ error: '商品不存在' });
+      }
     }
     
     // 验证卡密列表
@@ -104,6 +132,8 @@ router.post('/upload', authenticateToken, requireAdmin, async (req, res) => {
       data: processedKeys.map(cardKey => ({
         cardKey,
         planType,
+        gameId: gameId ? parseInt(gameId) : null,
+        productId: productId ? parseInt(productId) : null,
         status: 'unused'
       }))
     });
@@ -113,7 +143,15 @@ router.post('/upload', authenticateToken, requireAdmin, async (req, res) => {
       where: {
         cardKey: { in: processedKeys }
       },
-      orderBy: { createdAt: 'desc' }
+      orderBy: { createdAt: 'desc' },
+      include: {
+        game: {
+          select: { id: true, name: true }
+        },
+        product: {
+          select: { id: true, name: true }
+        }
+      }
     });
     
     res.status(201).json({

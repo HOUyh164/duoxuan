@@ -10,6 +10,9 @@ const authRoutes = require('./routes/auth');
 const cardRoutes = require('./routes/cards');
 const orderRoutes = require('./routes/orders');
 const adminRoutes = require('./routes/admin');
+const gameRoutes = require('./routes/games');
+const productRoutes = require('./routes/products');
+const configRoutes = require('./routes/config');
 
 const app = express();
 const prisma = new PrismaClient();
@@ -80,6 +83,9 @@ app.use('/api/auth', authRoutes);
 app.use('/api/cards', cardRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/games', gameRoutes);
+app.use('/api/products', productRoutes);
+app.use('/api/config', configRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {

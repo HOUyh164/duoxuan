@@ -19,10 +19,68 @@ model User {
   orders    Order[]
 }
 
+// 游戏分类
+model Game {
+  id          Int       @id @default(autoincrement())
+  name        String    // 游戏名称
+  slug        String    @unique // URL友好的标识符
+  description String?   // 游戏描述
+  icon        String?   // 游戏图标URL
+  coverImage  String?   // 封面图片URL
+  themeColor  String    @default("#ff4655") // 主题色
+  isActive    Boolean   @default(true) // 是否启用
+  sortOrder   Int       @default(0) // 排序顺序
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  products    Product[]
+  cards       Card[]
+  configs     SiteConfig[]
+}
+
+// 商品
+model Product {
+  id          Int      @id @default(autoincrement())
+  gameId      Int      // 关联的游戏
+  game        Game     @relation(fields: [gameId], references: [id], onDelete: Cascade)
+  name        String   // 商品名称（如：天卡、周卡）
+  planType    String   // 方案类型标识 "day" | "week" | "month" | "lifetime"
+  price       Float    // 价格
+  currency    String   @default("NT$") // 货币单位
+  duration    Int      // 时长（小时），永久为 -1
+  description String?  // 商品描述
+  features    String   @default("[]") // 功能特性列表，JSON数组
+  badge       String?  // 徽章文字（如：热门、推荐）
+  isPopular   Boolean  @default(false) // 是否热门
+  isPremium   Boolean  @default(false) // 是否高级
+  isActive    Boolean  @default(true) // 是否启用
+  sortOrder   Int      @default(0) // 排序顺序
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  cards       Card[]
+  orders      Order[]
+}
+
+// 网站配置
+model SiteConfig {
+  id        Int      @id @default(autoincrement())
+  gameId    Int?     // 关联游戏ID，null表示全局配置
+  game      Game?    @relation(fields: [gameId], references: [id], onDelete: Cascade)
+  key       String   // 配置键
+  value     String   // 配置值（JSON字符串）
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([gameId, key]) // 同一游戏下配置键唯一
+}
+
 model Card {
   id        Int       @id @default(autoincrement())
   cardKey   String    @unique
-  planType  String    // "day" | "week" | "month" | "lifetime"
+  planType  String    // "day" | "week" | "month" | "lifetime" (保留用于兼容)
+  productId Int?      // 关联商品
+  product   Product?  @relation(fields: [productId], references: [id], onDelete: SetNull)
+  gameId    Int?      // 关联游戏
+  game      Game?     @relation(fields: [gameId], references: [id], onDelete: SetNull)
   status    String    @default("unused") // "unused" | "used" | "expired"
   orderId   Int?
   order     Order?    @relation(fields: [orderId], references: [id])
@@ -34,7 +92,9 @@ model Order {
   id            Int      @id @default(autoincrement())
   userId        Int
   user          User     @relation(fields: [userId], references: [id])
-  planType      String   // "day" | "week" | "month" | "lifetime"
+  productId     Int?     // 关联商品
+  product       Product? @relation(fields: [productId], references: [id], onDelete: SetNull)
+  planType      String   // "day" | "week" | "month" | "lifetime" (保留用于兼容)
   amount        Float
   status        String   @default("pending") // "pending" | "paid" | "cancelled" | "refunded"
   paymentMethod String?

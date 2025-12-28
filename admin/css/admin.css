@@ -498,6 +498,106 @@ tbody tr:hover {
     color: var(--primary);
 }
 
+/* Modal Large */
+.modal-lg {
+    max-width: 600px;
+}
+
+/* Form Row */
+.form-row {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+}
+
+@media (max-width: 600px) {
+    .form-row {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Checkbox Label */
+.checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    color: var(--text-primary);
+}
+
+.checkbox-label input[type="checkbox"] {
+    width: auto;
+    cursor: pointer;
+}
+
+/* Game Icon */
+.game-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 6px;
+    object-fit: cover;
+}
+
+.no-icon {
+    color: var(--text-secondary);
+}
+
+/* Config Tabs */
+.config-tabs {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 1rem;
+}
+
+.config-tab {
+    padding: 0.5rem 1rem;
+    background: transparent;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    border-radius: 0.5rem;
+    transition: all 0.2s;
+}
+
+.config-tab:hover {
+    background: var(--bg-input);
+    color: var(--text-primary);
+}
+
+.config-tab.active {
+    background: var(--primary);
+    color: white;
+}
+
+/* Config Section */
+.config-section {
+    background: var(--bg-card);
+    padding: 1.5rem;
+    border-radius: 1rem;
+}
+
+.config-form {
+    max-width: 800px;
+}
+
+.config-form .form-group {
+    margin-bottom: 1.5rem;
+}
+
+.config-form textarea {
+    min-height: 80px;
+}
+
+/* Color Input */
+input[type="color"] {
+    width: 60px;
+    height: 40px;
+    padding: 4px;
+    cursor: pointer;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
     #admin-panel {

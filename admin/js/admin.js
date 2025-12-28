@@ -4,6 +4,7 @@ const API_BASE = '/api';
 // State
 let token = localStorage.getItem('adminToken');
 let currentUser = null;
+let gamesCache = [];
 let currentPage = {
     cards: 1,
     orders: 1,
@@ -47,6 +48,16 @@ function setupEventListeners() {
         });
     });
     
+    // Games
+    document.getElementById('add-game-btn').addEventListener('click', () => openGameModal());
+    document.getElementById('game-form').addEventListener('submit', handleSaveGame);
+    
+    // Products
+    document.getElementById('add-product-btn').addEventListener('click', () => openProductModal());
+    document.getElementById('product-form').addEventListener('submit', handleSaveProduct);
+    document.getElementById('filter-product-game').addEventListener('change', () => loadProducts());
+    document.getElementById('filter-product-status').addEventListener('change', () => loadProducts());
+    
     // Upload cards modal
     document.getElementById('upload-cards-btn').addEventListener('click', () => {
         document.getElementById('upload-modal').classList.remove('hidden');
@@ -58,9 +69,10 @@ function setupEventListeners() {
     
     document.getElementById('upload-form').addEventListener('submit', handleUploadCards);
     
-    // Filters
+    // Card Filters
     document.getElementById('filter-card-status').addEventListener('change', () => loadCards(1));
     document.getElementById('filter-card-plan').addEventListener('change', () => loadCards(1));
+    document.getElementById('filter-card-game').addEventListener('change', () => loadCards(1));
     
     // User search
     let searchTimeout;
@@ -68,6 +80,25 @@ function setupEventListeners() {
         clearTimeout(searchTimeout);
         searchTimeout = setTimeout(() => loadUsers(1, e.target.value), 300);
     });
+    
+    // Config tabs
+    document.querySelectorAll('.config-tab').forEach(tab => {
+        tab.addEventListener('click', () => {
+            document.querySelectorAll('.config-tab').forEach(t => t.classList.remove('active'));
+            tab.classList.add('active');
+            
+            const tabName = tab.dataset.configTab;
+            document.querySelectorAll('.config-section').forEach(s => s.classList.add('hidden'));
+            document.getElementById(`config-${tabName}`).classList.remove('hidden');
+        });
+    });
+    
+    // Global config form
+    document.getElementById('global-config-form').addEventListener('submit', handleSaveGlobalConfig);
+    
+    // Game config select
+    document.getElementById('config-game-select').addEventListener('change', handleGameConfigSelect);
+    document.getElementById('game-config-form').addEventListener('submit', handleSaveGameConfig);
 }
 
 // Auth Functions
@@ -140,13 +171,56 @@ function showLogin() {
     adminPanel.classList.add('hidden');
 }
 
-function showAdminPanel() {
+async function showAdminPanel() {
     loginPage.classList.add('hidden');
     adminPanel.classList.remove('hidden');
     userEmailEl.textContent = currentUser.email;
     
+    // Load games cache for filters
+    await loadGamesCache();
+    
     // Load dashboard
     navigateTo('dashboard');
+}
+
+async function loadGamesCache() {
+    try {
+        const res = await fetch(`${API_BASE}/games`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (res.ok) {
+            gamesCache = await res.json();
+            updateGameSelects();
+        }
+    } catch (error) {
+        console.error('Load games cache error:', error);
+    }
+}
+
+function updateGameSelects() {
+    const selects = [
+        'filter-product-game',
+        'filter-card-game',
+        'product-gameId',
+        'upload-gameId',
+        'config-game-select'
+    ];
+    
+    selects.forEach(selectId => {
+        const select = document.getElementById(selectId);
+        if (!select) return;
+        
+        const firstOption = select.options[0];
+        select.innerHTML = '';
+        select.appendChild(firstOption);
+        
+        gamesCache.forEach(game => {
+            const option = document.createElement('option');
+            option.value = game.id;
+            option.textContent = game.name;
+            select.appendChild(option);
+        });
+    });
 }
 
 // Navigation
@@ -159,9 +233,12 @@ function navigateTo(page) {
     // Update title
     const titles = {
         dashboard: '儀表板',
+        games: '遊戲管理',
+        products: '商品管理',
         cards: '卡密管理',
         orders: '訂單管理',
-        users: '用戶管理'
+        users: '用戶管理',
+        config: '網站配置'
     };
     pageTitleEl.textContent = titles[page];
     
@@ -176,6 +253,12 @@ function navigateTo(page) {
         case 'dashboard':
             loadDashboard();
             break;
+        case 'games':
+            loadGames();
+            break;
+        case 'products':
+            loadProducts();
+            break;
         case 'cards':
             loadCards(1);
             break;
@@ -184,6 +267,9 @@ function navigateTo(page) {
             break;
         case 'users':
             loadUsers(1);
+            break;
+        case 'config':
+            loadConfig();
             break;
     }
 }
@@ -221,17 +307,326 @@ async function loadDashboard() {
     }
 }
 
+// Games
+async function loadGames() {
+    try {
+        const res = await fetch(`${API_BASE}/games`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        if (!res.ok) throw new Error('Failed to load games');
+        
+        const games = await res.json();
+        gamesCache = games;
+        updateGameSelects();
+        
+        const tbody = document.querySelector('#games-table tbody');
+        tbody.innerHTML = games.map(game => `
+            <tr>
+                <td>#${game.id}</td>
+                <td>
+                    ${game.icon ? `<img src="${game.icon}" alt="${game.name}" class="game-icon">` : '<span class="no-icon">-</span>'}
+                </td>
+                <td>${game.name}</td>
+                <td><code>${game.slug}</code></td>
+                <td>${game._count?.products || 0}</td>
+                <td>${game.isActive ? '<span class="badge badge-success">啟用</span>' : '<span class="badge badge-danger">停用</span>'}</td>
+                <td>${game.sortOrder}</td>
+                <td>
+                    <button class="btn btn-sm btn-primary" onclick="editGame(${game.id})">編輯</button>
+                    <button class="btn btn-sm btn-danger" onclick="deleteGame(${game.id})">刪除</button>
+                </td>
+            </tr>
+        `).join('');
+    } catch (error) {
+        console.error('Load games error:', error);
+    }
+}
+
+function openGameModal(game = null) {
+    const modal = document.getElementById('game-modal');
+    const title = document.getElementById('game-modal-title');
+    const form = document.getElementById('game-form');
+    
+    form.reset();
+    
+    if (game) {
+        title.textContent = '編輯遊戲';
+        document.getElementById('game-id').value = game.id;
+        document.getElementById('game-name').value = game.name;
+        document.getElementById('game-slug').value = game.slug;
+        document.getElementById('game-description').value = game.description || '';
+        document.getElementById('game-icon').value = game.icon || '';
+        document.getElementById('game-coverImage').value = game.coverImage || '';
+        document.getElementById('game-themeColor').value = game.themeColor || '#ff4655';
+        document.getElementById('game-sortOrder').value = game.sortOrder || 0;
+        document.getElementById('game-isActive').checked = game.isActive;
+    } else {
+        title.textContent = '新增遊戲';
+        document.getElementById('game-id').value = '';
+        document.getElementById('game-themeColor').value = '#ff4655';
+        document.getElementById('game-isActive').checked = true;
+    }
+    
+    modal.classList.remove('hidden');
+}
+
+function closeGameModal() {
+    document.getElementById('game-modal').classList.add('hidden');
+}
+
+async function editGame(id) {
+    try {
+        const res = await fetch(`${API_BASE}/games/${id}`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        if (!res.ok) throw new Error('Failed to load game');
+        
+        const game = await res.json();
+        openGameModal(game);
+    } catch (error) {
+        alert('載入遊戲失敗: ' + error.message);
+    }
+}
+
+async function handleSaveGame(e) {
+    e.preventDefault();
+    
+    const id = document.getElementById('game-id').value;
+    const data = {
+        name: document.getElementById('game-name').value,
+        slug: document.getElementById('game-slug').value,
+        description: document.getElementById('game-description').value || null,
+        icon: document.getElementById('game-icon').value || null,
+        coverImage: document.getElementById('game-coverImage').value || null,
+        themeColor: document.getElementById('game-themeColor').value,
+        sortOrder: parseInt(document.getElementById('game-sortOrder').value) || 0,
+        isActive: document.getElementById('game-isActive').checked
+    };
+    
+    try {
+        const url = id ? `${API_BASE}/games/${id}` : `${API_BASE}/games`;
+        const method = id ? 'PUT' : 'POST';
+        
+        const res = await fetch(url, {
+            method,
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify(data)
+        });
+        
+        const result = await res.json();
+        
+        if (!res.ok) {
+            throw new Error(result.error || '保存失敗');
+        }
+        
+        closeGameModal();
+        loadGames();
+        alert(id ? '遊戲已更新！' : '遊戲已創建！');
+    } catch (error) {
+        alert(error.message);
+    }
+}
+
+async function deleteGame(id) {
+    if (!confirm('確定要刪除此遊戲嗎？這將同時刪除該遊戲的所有商品！')) return;
+    
+    try {
+        const res = await fetch(`${API_BASE}/games/${id}`, {
+            method: 'DELETE',
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        if (!res.ok) {
+            const data = await res.json();
+            throw new Error(data.error || '刪除失敗');
+        }
+        
+        loadGames();
+    } catch (error) {
+        alert(error.message);
+    }
+}
+
+// Products
+async function loadProducts() {
+    const gameId = document.getElementById('filter-product-game').value;
+    const active = document.getElementById('filter-product-status').value;
+    
+    let url = `${API_BASE}/products?`;
+    if (gameId) url += `gameId=${gameId}&`;
+    if (active) url += `active=${active}&`;
+    
+    try {
+        const res = await fetch(url, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        if (!res.ok) throw new Error('Failed to load products');
+        
+        const products = await res.json();
+        
+        const tbody = document.querySelector('#products-table tbody');
+        tbody.innerHTML = products.map(product => `
+            <tr>
+                <td>#${product.id}</td>
+                <td>${product.game?.name || '-'}</td>
+                <td>${product.name}</td>
+                <td>${product.currency} ${product.price.toLocaleString()}</td>
+                <td>${product.duration === -1 ? '永久' : product.duration + ' 小時'}</td>
+                <td>${product.badge || '-'}</td>
+                <td>${product.isActive ? '<span class="badge badge-success">啟用</span>' : '<span class="badge badge-danger">停用</span>'}</td>
+                <td>${product.sortOrder}</td>
+                <td>
+                    <button class="btn btn-sm btn-primary" onclick="editProduct(${product.id})">編輯</button>
+                    <button class="btn btn-sm btn-danger" onclick="deleteProduct(${product.id})">刪除</button>
+                </td>
+            </tr>
+        `).join('');
+    } catch (error) {
+        console.error('Load products error:', error);
+    }
+}
+
+function openProductModal(product = null) {
+    const modal = document.getElementById('product-modal');
+    const title = document.getElementById('product-modal-title');
+    const form = document.getElementById('product-form');
+    
+    form.reset();
+    
+    if (product) {
+        title.textContent = '編輯商品';
+        document.getElementById('product-id').value = product.id;
+        document.getElementById('product-gameId').value = product.gameId;
+        document.getElementById('product-name').value = product.name;
+        document.getElementById('product-planType').value = product.planType;
+        document.getElementById('product-price').value = product.price;
+        document.getElementById('product-currency').value = product.currency || 'NT$';
+        document.getElementById('product-duration').value = product.duration;
+        document.getElementById('product-description').value = product.description || '';
+        document.getElementById('product-features').value = (product.features || []).join('\n');
+        document.getElementById('product-badge').value = product.badge || '';
+        document.getElementById('product-sortOrder').value = product.sortOrder || 0;
+        document.getElementById('product-isPopular').checked = product.isPopular;
+        document.getElementById('product-isPremium').checked = product.isPremium;
+        document.getElementById('product-isActive').checked = product.isActive;
+    } else {
+        title.textContent = '新增商品';
+        document.getElementById('product-id').value = '';
+        document.getElementById('product-currency').value = 'NT$';
+        document.getElementById('product-isActive').checked = true;
+    }
+    
+    modal.classList.remove('hidden');
+}
+
+function closeProductModal() {
+    document.getElementById('product-modal').classList.add('hidden');
+}
+
+async function editProduct(id) {
+    try {
+        const res = await fetch(`${API_BASE}/products/${id}`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        if (!res.ok) throw new Error('Failed to load product');
+        
+        const product = await res.json();
+        openProductModal(product);
+    } catch (error) {
+        alert('載入商品失敗: ' + error.message);
+    }
+}
+
+async function handleSaveProduct(e) {
+    e.preventDefault();
+    
+    const id = document.getElementById('product-id').value;
+    const featuresText = document.getElementById('product-features').value;
+    const features = featuresText.split('\n').map(f => f.trim()).filter(f => f.length > 0);
+    
+    const data = {
+        gameId: parseInt(document.getElementById('product-gameId').value),
+        name: document.getElementById('product-name').value,
+        planType: document.getElementById('product-planType').value,
+        price: parseFloat(document.getElementById('product-price').value),
+        currency: document.getElementById('product-currency').value || 'NT$',
+        duration: parseInt(document.getElementById('product-duration').value) || 24,
+        description: document.getElementById('product-description').value || null,
+        features,
+        badge: document.getElementById('product-badge').value || null,
+        sortOrder: parseInt(document.getElementById('product-sortOrder').value) || 0,
+        isPopular: document.getElementById('product-isPopular').checked,
+        isPremium: document.getElementById('product-isPremium').checked,
+        isActive: document.getElementById('product-isActive').checked
+    };
+    
+    try {
+        const url = id ? `${API_BASE}/products/${id}` : `${API_BASE}/products`;
+        const method = id ? 'PUT' : 'POST';
+        
+        const res = await fetch(url, {
+            method,
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify(data)
+        });
+        
+        const result = await res.json();
+        
+        if (!res.ok) {
+            throw new Error(result.error || '保存失敗');
+        }
+        
+        closeProductModal();
+        loadProducts();
+        alert(id ? '商品已更新！' : '商品已創建！');
+    } catch (error) {
+        alert(error.message);
+    }
+}
+
+async function deleteProduct(id) {
+    if (!confirm('確定要刪除此商品嗎？')) return;
+    
+    try {
+        const res = await fetch(`${API_BASE}/products/${id}`, {
+            method: 'DELETE',
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        if (!res.ok) {
+            const data = await res.json();
+            throw new Error(data.error || '刪除失敗');
+        }
+        
+        loadProducts();
+    } catch (error) {
+        alert(error.message);
+    }
+}
+
 // Cards
 async function loadCards(page = 1) {
     currentPage.cards = page;
     
     const status = document.getElementById('filter-card-status').value;
     const planType = document.getElementById('filter-card-plan').value;
+    const gameId = document.getElementById('filter-card-game').value;
     
     try {
         let url = `${API_BASE}/cards?page=${page}&limit=20`;
         if (status) url += `&status=${status}`;
         if (planType) url += `&planType=${planType}`;
+        if (gameId) url += `&gameId=${gameId}`;
         
         const res = await fetch(url, {
             headers: { 'Authorization': `Bearer ${token}` }
@@ -249,6 +644,7 @@ async function loadCards(page = 1) {
                     <code>${card.cardKey}</code>
                     <button class="copy-btn" onclick="copyToClipboard('${card.cardKey}')">📋</button>
                 </td>
+                <td>${card.game?.name || '-'}</td>
                 <td>${getPlanLabel(card.planType)}</td>
                 <td>${getCardStatusBadge(card.status)}</td>
                 <td>${formatDate(card.createdAt)}</td>
@@ -271,6 +667,7 @@ async function loadCards(page = 1) {
 async function handleUploadCards(e) {
     e.preventDefault();
     
+    const gameId = document.getElementById('upload-gameId').value;
     const planType = document.getElementById('plan-type').value;
     const cardKeysText = document.getElementById('card-keys').value;
     
@@ -285,6 +682,9 @@ async function handleUploadCards(e) {
         return;
     }
     
+    const data = { planType, cardKeys };
+    if (gameId) data.gameId = parseInt(gameId);
+    
     try {
         const res = await fetch(`${API_BASE}/cards/upload`, {
             method: 'POST',
@@ -292,19 +692,19 @@ async function handleUploadCards(e) {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}`
             },
-            body: JSON.stringify({ planType, cardKeys })
+            body: JSON.stringify(data)
         });
         
-        const data = await res.json();
+        const result = await res.json();
         
         if (!res.ok) {
-            throw new Error(data.error || '上傳失敗');
+            throw new Error(result.error || '上傳失敗');
         }
         
         document.getElementById('upload-modal').classList.add('hidden');
         document.getElementById('upload-form').reset();
         
-        alert(`成功上傳 ${data.count} 張卡密！`);
+        alert(`成功上傳 ${result.count} 張卡密！`);
         loadCards(1);
     } catch (error) {
         alert(error.message);
@@ -459,6 +859,139 @@ async function toggleUserRole(id, newRole) {
     }
 }
 
+// Config
+async function loadConfig() {
+    try {
+        const res = await fetch(`${API_BASE}/config`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        if (!res.ok) throw new Error('Failed to load config');
+        
+        const config = await res.json();
+        
+        // Fill global config form
+        document.getElementById('config-siteName').value = config.siteName || '';
+        document.getElementById('config-siteTagline').value = config.siteTagline || '';
+        document.getElementById('config-heroTitle').value = config.heroTitle || '';
+        document.getElementById('config-heroSubtitle').value = config.heroSubtitle || '';
+        document.getElementById('config-discordUrl').value = config.discordUrl || '';
+        document.getElementById('config-discordOnline').value = config.discordOnline || '';
+        document.getElementById('config-discordMembers').value = config.discordMembers || '';
+        document.getElementById('config-footerCopyright').value = config.footerCopyright || '';
+        document.getElementById('config-footerDisclaimer').value = config.footerDisclaimer || '';
+    } catch (error) {
+        console.error('Load config error:', error);
+    }
+}
+
+async function handleSaveGlobalConfig(e) {
+    e.preventDefault();
+    
+    const configs = {
+        siteName: document.getElementById('config-siteName').value,
+        siteTagline: document.getElementById('config-siteTagline').value,
+        heroTitle: document.getElementById('config-heroTitle').value,
+        heroSubtitle: document.getElementById('config-heroSubtitle').value,
+        discordUrl: document.getElementById('config-discordUrl').value,
+        discordOnline: document.getElementById('config-discordOnline').value,
+        discordMembers: document.getElementById('config-discordMembers').value,
+        footerCopyright: document.getElementById('config-footerCopyright').value,
+        footerDisclaimer: document.getElementById('config-footerDisclaimer').value
+    };
+    
+    try {
+        const res = await fetch(`${API_BASE}/config`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({ configs })
+        });
+        
+        if (!res.ok) {
+            const data = await res.json();
+            throw new Error(data.error || '保存失敗');
+        }
+        
+        alert('配置已保存！');
+    } catch (error) {
+        alert(error.message);
+    }
+}
+
+async function handleGameConfigSelect() {
+    const gameId = document.getElementById('config-game-select').value;
+    const form = document.getElementById('game-config-form');
+    
+    if (!gameId) {
+        form.classList.add('hidden');
+        return;
+    }
+    
+    try {
+        const res = await fetch(`${API_BASE}/config?gameId=${gameId}`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        if (!res.ok) throw new Error('Failed to load game config');
+        
+        const config = await res.json();
+        
+        document.getElementById('config-game-heroTitle').value = config.heroTitle || '';
+        document.getElementById('config-game-heroSubtitle').value = config.heroSubtitle || '';
+        document.getElementById('config-game-features').value = typeof config.features === 'string' 
+            ? config.features 
+            : JSON.stringify(config.features || [], null, 2);
+        
+        form.classList.remove('hidden');
+    } catch (error) {
+        console.error('Load game config error:', error);
+    }
+}
+
+async function handleSaveGameConfig(e) {
+    e.preventDefault();
+    
+    const gameId = document.getElementById('config-game-select').value;
+    if (!gameId) return;
+    
+    let features;
+    try {
+        features = JSON.parse(document.getElementById('config-game-features').value || '[]');
+    } catch {
+        alert('功能介紹 JSON 格式錯誤');
+        return;
+    }
+    
+    const configs = {
+        heroTitle: document.getElementById('config-game-heroTitle').value,
+        heroSubtitle: document.getElementById('config-game-heroSubtitle').value,
+        features
+    };
+    
+    try {
+        const res = await fetch(`${API_BASE}/config`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({ configs, gameId: parseInt(gameId) })
+        });
+        
+        if (!res.ok) {
+            const data = await res.json();
+            throw new Error(data.error || '保存失敗');
+        }
+        
+        alert('遊戲配置已保存！');
+    } catch (error) {
+        alert(error.message);
+    }
+}
+
 // Helper Functions
 function getPlanLabel(planType) {
     const labels = {
@@ -545,6 +1078,12 @@ function capitalize(str) {
 }
 
 // Make functions global for onclick handlers
+window.editGame = editGame;
+window.deleteGame = deleteGame;
+window.closeGameModal = closeGameModal;
+window.editProduct = editProduct;
+window.deleteProduct = deleteProduct;
+window.closeProductModal = closeProductModal;
 window.deleteCard = deleteCard;
 window.updateOrderStatus = updateOrderStatus;
 window.toggleUserRole = toggleUserRole;
@@ -552,5 +1091,3 @@ window.copyToClipboard = copyToClipboard;
 window.loadCards = loadCards;
 window.loadOrders = loadOrders;
 window.loadUsers = loadUsers;
-
-

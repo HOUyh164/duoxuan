@@ -3,446 +3,274 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DORA - VALORANT 頂級輔助</title>
-    <meta name="description" content="DORA - 專為 VALORANT 打造的頂級遊戲輔助工具，AI 自瞄、ESP 透視、無後座力等強大功能">
+    <title id="site-title">DORA - 頂級遊戲輔助門戶</title>
+    <meta name="description" content="DORA - 專業遊戲輔助平台，請選擇您的遊戲進入">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/style.css">
+    <style>
+        /* 門戶頁高級優化樣式 */
+        :root {
+            --card-height: 450px;
+        }
+
+        .portal-container {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 80px 20px;
+            position: relative;
+            z-index: 1;
+            background: radial-gradient(circle at center, rgba(168, 85, 247, 0.05) 0%, transparent 70%);
+        }
+
+        .portal-header {
+            text-align: center;
+            margin-bottom: 80px;
+            animation: fadeInDown 1s ease;
+        }
+
+        .portal-logo {
+            font-family: var(--font-display);
+            font-size: 5rem;
+            font-weight: 900;
+            letter-spacing: 15px;
+            background: linear-gradient(135deg, #fff 0%, var(--primary) 50%, var(--cyan) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+            filter: drop-shadow(0 0 30px rgba(168, 85, 247, 0.5));
+            text-transform: uppercase;
+        }
+
+        .portal-tagline {
+            font-size: 1rem;
+            color: var(--text-secondary);
+            letter-spacing: 6px;
+            text-transform: uppercase;
+            opacity: 0.8;
+        }
+
+        .game-selector-title {
+            font-family: var(--font-display);
+            font-size: 1.2rem;
+            margin-bottom: 40px;
+            color: var(--text-primary);
+            letter-spacing: 4px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            opacity: 0.9;
+        }
+
+        .game-selector-title::before,
+        .game-selector-title::after {
+            content: '';
+            display: block;
+            width: 100px;
+            height: 1px;
+            background: linear-gradient(to right, transparent, var(--border-color), transparent);
+        }
+
+        .portal-games-grid {
+            width: 100%;
+            max-width: 1300px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+            gap: 40px;
+            padding: 20px;
+        }
+
+        /* 遊戲卡片終極優化 */
+        .game-card {
+            height: var(--card-height);
+            border-radius: 24px;
+            background: #050508;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+            text-decoration: none;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        .game-card-bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            opacity: 0.5;
+            transition: all 0.8s ease;
+        }
+
+        .game-card-bg img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            filter: grayscale(20%);
+        }
+
+        /* 漸變遮罩：確保底部文字清晰 */
+        .game-card::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(to top, 
+                rgba(0,0,0,0.95) 0%, 
+                rgba(0,0,0,0.6) 40%, 
+                transparent 100%);
+            z-index: 1;
+        }
+
+        .game-card-content {
+            position: relative;
+            z-index: 2;
+            padding: 40px;
+            transform: translateY(20px);
+            transition: all 0.5s ease;
+        }
+
+        .game-card-title {
+            font-family: var(--font-display);
+            font-size: 2.2rem;
+            font-weight: 800;
+            color: #fff;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .game-card-desc {
+            font-size: 0.95rem;
+            color: rgba(255, 255, 255, 0.7);
+            line-height: 1.6;
+            margin-bottom: 25px;
+            max-width: 90%;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .game-card-arrow {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            background: var(--theme-color, var(--primary));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-size: 1.5rem;
+            box-shadow: 0 0 20px color-mix(in srgb, var(--theme-color, var(--primary)) 50%, transparent);
+            opacity: 0;
+            transform: translateX(-20px);
+            transition: all 0.4s ease;
+        }
+
+        /* 懸停交互 */
+        .game-card:hover {
+            transform: translateY(-15px);
+            border-color: var(--theme-color, var(--primary));
+            box-shadow: 0 20px 50px rgba(0,0,0,0.8), 0 0 30px color-mix(in srgb, var(--theme-color, var(--primary)) 20%, transparent);
+        }
+
+        .game-card:hover .game-card-bg {
+            opacity: 0.8;
+            transform: scale(1.1);
+        }
+
+        .game-card:hover .game-card-bg img {
+            filter: grayscale(0%);
+        }
+
+        .game-card:hover .game-card-content {
+            transform: translateY(0);
+        }
+
+        .game-card:hover .game-card-arrow {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .portal-footer {
+            margin-top: 100px;
+            padding-bottom: 40px;
+            text-align: center;
+            opacity: 0.6;
+        }
+
+        @keyframes fadeInDown {
+            from { opacity: 0; transform: translateY(-30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @media (max-width: 768px) {
+            .portal-logo { font-size: 3rem; letter-spacing: 8px; }
+            .portal-games-grid { grid-template-columns: 1fr; gap: 30px; }
+            .game-card { height: 350px; }
+            .game-card-content { padding: 30px; }
+        }
+    </style>
 </head>
 <body>
-    <!-- 背景動畫 -->
+    <!-- 背景效果 -->
     <div class="bg-grid"></div>
     <div class="bg-glow"></div>
 
-    <!-- 導航欄 -->
-    <nav class="navbar" id="navbar">
-        <div class="nav-container">
-            <a href="#home" class="nav-logo">
-                <span class="logo-text">DORA</span>
-                <span class="logo-dot"></span>
-            </a>
-            <ul class="nav-menu" id="nav-menu">
-                <li class="nav-item">
-                    <a href="#home" class="nav-link active">首頁</a>
-                </li>
-                <li class="nav-item">
-                    <a href="#features" class="nav-link">功能</a>
-                </li>
-                <li class="nav-item">
-                    <a href="#pricing" class="nav-link">定價</a>
-                </li>
-                <li class="nav-item">
-                    <a href="#download" class="nav-link">下載</a>
-                </li>
-            </ul>
-            <a href="https://discord.gg/your-invite" target="_blank" class="nav-discord-btn">
-                <svg class="discord-icon" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028 14.09 14.09 0 0 0 1.226-1.994.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"/>
-                </svg>
-                <span>Discord</span>
-            </a>
-            <!-- 用戶按鈕 -->
-            <button class="nav-user-btn" id="user-btn">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                    <circle cx="12" cy="7" r="4"></circle>
-                </svg>
-                <span id="user-btn-text">登入</span>
-            </button>
-            <button class="nav-toggle" id="nav-toggle">
-                <span></span>
-                <span></span>
-                <span></span>
-            </button>
-        </div>
-    </nav>
+    <!-- 顶部控制栏 -->
+    <div class="portal-nav">
+        <button class="nav-user-btn" id="user-btn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                <circle cx="12" cy="7" r="4"></circle>
+            </svg>
+            <span id="user-btn-text">登入</span>
+        </button>
+    </div>
 
-    <!-- Hero 區塊 -->
-    <section class="hero" id="home">
-        <div class="hero-content">
-            <div class="hero-badge">VALORANT 專用</div>
-            <h1 class="hero-title">
-                <span class="title-line">征服戰場</span>
-                <span class="title-accent">DORA</span>
-            </h1>
-            <p class="hero-subtitle">
-                業界頂尖的 AI 輔助技術，為您帶來無與倫比的遊戲體驗。<br>
-                精準、穩定、安全 — 專為追求卓越的玩家打造。
-            </p>
-            <div class="hero-buttons">
-                <a href="#pricing" class="btn btn-primary">
-                    <span>立即購買</span>
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M5 12h14M12 5l7 7-7 7"/>
-                    </svg>
-                </a>
-                <a href="#features" class="btn btn-secondary">
-                    <span>了解更多</span>
-                </a>
-            </div>
-            <div class="hero-stats">
-                <div class="stat-item">
-                    <span class="stat-number">99.9%</span>
-                    <span class="stat-label">穩定率</span>
-                </div>
-                <div class="stat-divider"></div>
-                <div class="stat-item">
-                    <span class="stat-number">24/7</span>
-                    <span class="stat-label">技術支援</span>
-                </div>
-                <div class="stat-divider"></div>
-                <div class="stat-item">
-                    <span class="stat-number">1000+</span>
-                    <span class="stat-label">活躍用戶</span>
-                </div>
+    <div class="portal-container">
+        <!-- 头部 Logo -->
+        <header class="portal-header">
+            <div class="portal-logo" id="portal-logo">DORA</div>
+            <div class="portal-tagline" id="portal-tagline">PREMIUM GAMING SOLUTIONS</div>
+        </header>
+
+        <!-- 游戏选择器 -->
+        <div class="game-selector-title">SELECT YOUR GAME</div>
+        <div class="portal-games-grid" id="games-grid">
+            <!-- 动态加载游戏卡片 -->
+            <div class="loading-placeholder">
+                <div class="loading-spinner"></div>
+                <p>INITIALIZING PORTAL...</p>
             </div>
         </div>
-        <div class="hero-visual">
-            <div class="hero-glow"></div>
-            <div class="hero-ring hero-ring-1"></div>
-            <div class="hero-ring hero-ring-2"></div>
-            <div class="hero-ring hero-ring-3"></div>
-            <div class="hero-logo-wrapper">
-                <span class="hero-logo">D</span>
+
+        <!-- 门户页底部 -->
+        <footer class="portal-footer">
+            <p id="footer-copyright">&copy; 2024 DORA. ALL RIGHTS RESERVED.</p>
+            <div class="footer-links" style="margin-top: 10px; display: flex; justify-content: center; gap: 20px;">
+                <a href="#" target="_blank" id="discord-link">DISCORD</a>
+                <a href="/admin">ADMIN PANEL</a>
             </div>
-        </div>
-    </section>
+        </footer>
+    </div>
 
-    <!-- 功能介紹區塊 -->
-    <section class="features" id="features">
-        <div class="section-container">
-            <div class="section-header">
-                <span class="section-tag">核心功能</span>
-                <h2 class="section-title">強大功能，助您制霸</h2>
-                <p class="section-desc">DORA 提供業界最先進的功能模組，讓您在遊戲中佔盡優勢</p>
-            </div>
-            <div class="features-grid features-grid-3">
-                <!-- 功能 1: AI 自瞄 -->
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                            <circle cx="12" cy="12" r="10"/>
-                            <circle cx="12" cy="12" r="6"/>
-                            <circle cx="12" cy="12" r="2"/>
-                            <line x1="12" y1="2" x2="12" y2="6"/>
-                            <line x1="12" y1="18" x2="12" y2="22"/>
-                            <line x1="2" y1="12" x2="6" y2="12"/>
-                            <line x1="18" y1="12" x2="22" y2="12"/>
-                        </svg>
-                    </div>
-                    <h3 class="feature-title">AI 自瞄</h3>
-                    <p class="feature-desc">採用深度學習神經網路，智能識別目標並精準鎖定。支援自訂 FOV、平滑度等參數，操作自然流暢。</p>
-                    <ul class="feature-list">
-                        <li>智能目標識別</li>
-                        <li>可調節平滑度</li>
-                        <li>自訂瞄準部位</li>
-                    </ul>
-                </div>
-
-                <!-- 功能 2: 觸發機器人 -->
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                            <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
-                        </svg>
-                    </div>
-                    <h3 class="feature-title">觸發機器人</h3>
-                    <p class="feature-desc">當準心對準敵人時自動開火，反應速度遠超人類極限，適合狙擊手使用。</p>
-                    <ul class="feature-list">
-                        <li>毫秒級反應</li>
-                        <li>自訂觸發延遲</li>
-                        <li>按鍵觸發模式</li>
-                    </ul>
-                </div>
-
-                <!-- 功能 3: 安全防護 -->
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
-                            <path d="M9 12l2 2 4-4"/>
-                        </svg>
-                    </div>
-                    <h3 class="feature-title">安全防護</h3>
-                    <p class="feature-desc">採用驅動級隱藏技術，有效規避反作弊系統偵測，讓您安心遊戲。</p>
-                    <ul class="feature-list">
-                        <li>驅動級隱藏</li>
-                        <li>定期更新維護</li>
-                        <li>HWID 防護</li>
-                    </ul>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- 定價區塊 -->
-    <section class="pricing" id="pricing">
-        <div class="section-container">
-            <div class="section-header">
-                <span class="section-tag">定價方案</span>
-                <h2 class="section-title">選擇適合您的方案</h2>
-                <p class="section-desc">靈活的訂閱方案，滿足不同玩家的需求</p>
-            </div>
-            <div class="pricing-grid">
-                <!-- 天卡 -->
-                <div class="pricing-card">
-                    <div class="pricing-badge">體驗方案</div>
-                    <div class="pricing-header">
-                        <h3 class="pricing-name">天卡</h3>
-                        <div class="pricing-price">
-                            <span class="price-currency">NT$</span>
-                            <span class="price-amount">120</span>
-                        </div>
-                        <p class="pricing-period">1 天使用權</p>
-                    </div>
-                    <ul class="pricing-features">
-                        <li>
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <polyline points="20 6 9 17 4 12"/>
-                            </svg>
-                            全部功能解鎖
-                        </li>
-                        <li>
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <polyline points="20 6 9 17 4 12"/>
-                            </svg>
-                            24 小時使用時間
-                        </li>
-                        <li>
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <polyline points="20 6 9 17 4 12"/>
-                            </svg>
-                            技術支援
-                        </li>
-                    </ul>
-                    <button class="pricing-btn" onclick="handleBuy('day')">立即購買</button>
-                </div>
-
-                <!-- 周卡 -->
-                <div class="pricing-card">
-                    <div class="pricing-badge">經濟實惠</div>
-                    <div class="pricing-header">
-                        <h3 class="pricing-name">周卡</h3>
-                        <div class="pricing-price">
-                            <span class="price-currency">NT$</span>
-                            <span class="price-amount">400</span>
-                        </div>
-                        <p class="pricing-period">7 天使用權</p>
-                    </div>
-                    <ul class="pricing-features">
-                        <li>
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <polyline points="20 6 9 17 4 12"/>
-                            </svg>
-                            全部功能解鎖
-                        </li>
-                        <li>
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <polyline points="20 6 9 17 4 12"/>
-                            </svg>
-                            7 天使用時間
-                        </li>
-                        <li>
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <polyline points="20 6 9 17 4 12"/>
-                            </svg>
-                            技術支援
-                        </li>
-                    </ul>
-                    <button class="pricing-btn" onclick="handleBuy('week')">立即購買</button>
-                </div>
-
-                <!-- 月卡 -->
-                <div class="pricing-card pricing-popular">
-                    <div class="pricing-badge">熱門方案</div>
-                    <div class="pricing-header">
-                        <h3 class="pricing-name">月卡</h3>
-                        <div class="pricing-price">
-                            <span class="price-currency">NT$</span>
-                            <span class="price-amount">1,400</span>
-                        </div>
-                        <p class="pricing-period">30 天使用權</p>
-                    </div>
-                    <ul class="pricing-features">
-                        <li>
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <polyline points="20 6 9 17 4 12"/>
-                            </svg>
-                            全部功能解鎖
-                        </li>
-                        <li>
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <polyline points="20 6 9 17 4 12"/>
-                            </svg>
-                            30 天使用時間
-                        </li>
-                        <li>
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <polyline points="20 6 9 17 4 12"/>
-                            </svg>
-                            免費版本更新
-                        </li>
-                        <li>
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <polyline points="20 6 9 17 4 12"/>
-                            </svg>
-                            24/7 技術支援
-                        </li>
-                    </ul>
-                    <button class="pricing-btn pricing-btn-primary" onclick="handleBuy('month')">
-                        立即購買
-                    </button>
-                </div>
-
-                <!-- 永久卡 -->
-                <div class="pricing-card pricing-premium">
-                    <div class="pricing-badge">最超值</div>
-                    <div class="pricing-header">
-                        <h3 class="pricing-name">永久卡</h3>
-                        <div class="pricing-price">
-                            <span class="price-currency">NT$</span>
-                            <span class="price-amount">8,000</span>
-                        </div>
-                        <p class="pricing-period">永久使用權</p>
-                    </div>
-                    <ul class="pricing-features">
-                        <li>
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <polyline points="20 6 9 17 4 12"/>
-                            </svg>
-                            全部功能解鎖
-                        </li>
-                        <li>
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <polyline points="20 6 9 17 4 12"/>
-                            </svg>
-                            永久使用權限
-                        </li>
-                        <li>
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <polyline points="20 6 9 17 4 12"/>
-                            </svg>
-                            終身免費更新
-                        </li>
-                        <li>
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <polyline points="20 6 9 17 4 12"/>
-                            </svg>
-                            VIP 優先支援
-                        </li>
-                        <li>
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <polyline points="20 6 9 17 4 12"/>
-                            </svg>
-                            新功能優先體驗
-                        </li>
-                    </ul>
-                    <button class="pricing-btn pricing-btn-premium" onclick="handleBuy('lifetime')">
-                        立即購買
-                    </button>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- 下載/聯繫區塊 -->
-    <section class="download" id="download">
-        <div class="section-container">
-            <div class="download-content">
-                <div class="download-info">
-                    <span class="section-tag">開始使用</span>
-                    <h2 class="section-title">準備好了嗎？</h2>
-                    <p class="section-desc">
-                        加入我們的 Discord 社群，獲取軟體下載連結並開始您的遊戲之旅。
-                        我們的專業團隊隨時為您提供技術支援。
-                    </p>
-                    <div class="download-steps">
-                        <div class="step">
-                            <div class="step-number">1</div>
-                            <div class="step-content">
-                                <h4>加入 Discord</h4>
-                                <p>點擊下方按鈕加入我們的官方 Discord 伺服器</p>
-                            </div>
-                        </div>
-                        <div class="step">
-                            <div class="step-number">2</div>
-                            <div class="step-content">
-                                <h4>選擇方案</h4>
-                                <p>在 Discord 中聯繫管理員購買適合您的方案</p>
-                            </div>
-                        </div>
-                        <div class="step">
-                            <div class="step-number">3</div>
-                            <div class="step-content">
-                                <h4>下載使用</h4>
-                                <p>獲取下載連結，按照教學安裝並開始使用</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="download-cta">
-                    <div class="discord-card">
-                        <div class="discord-header">
-                            <svg class="discord-logo" viewBox="0 0 24 24" fill="currentColor">
-                                <path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028 14.09 14.09 0 0 0 1.226-1.994.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"/>
-                            </svg>
-                            <h3>DORA 官方社群</h3>
-                        </div>
-                        <div class="discord-stats">
-                            <div class="discord-stat">
-                                <span class="online-dot"></span>
-                                <span>100+ 在線</span>
-                            </div>
-                            <div class="discord-stat">
-                                <span>1000+ 成員</span>
-                            </div>
-                        </div>
-                        <a href="https://discord.gg/your-invite" target="_blank" class="discord-join-btn">
-                            加入 Discord
-                        </a>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- 頁腳 -->
-    <footer class="footer">
-        <div class="footer-container">
-            <div class="footer-main">
-                <div class="footer-brand">
-                    <span class="footer-logo">DORA</span>
-                    <p class="footer-tagline">VALORANT 頂級輔助工具</p>
-                </div>
-                <div class="footer-links">
-                    <a href="#home">首頁</a>
-                    <a href="#features">功能</a>
-                    <a href="#pricing">定價</a>
-                    <a href="#download">下載</a>
-                </div>
-            </div>
-            <div class="footer-bottom">
-                <p class="footer-copyright">
-                    &copy; 2024 DORA. All rights reserved.
-                </p>
-                <p class="footer-disclaimer">
-                    免責聲明：本軟體僅供學習研究使用，使用者須自行承擔使用風險。
-                </p>
-            </div>
-        </div>
-    </footer>
-
-    <!-- 登入/註冊彈窗 -->
+    <!-- 登入/註冊彈窗 (保留原有功能) -->
     <div class="auth-modal" id="auth-modal">
         <div class="auth-modal-overlay"></div>
         <div class="auth-modal-content">
             <button class="auth-modal-close" id="auth-modal-close">&times;</button>
-            
-            <!-- 登入表單 -->
             <div class="auth-form" id="login-form-container">
                 <h2>歡迎回來</h2>
-                <p class="auth-subtitle">登入您的 DORA 帳號</p>
                 <form id="login-form">
                     <div class="form-group">
                         <label for="login-email">電子郵件</label>
@@ -455,15 +283,10 @@
                     <p class="auth-error" id="login-error"></p>
                     <button type="submit" class="auth-btn">登入</button>
                 </form>
-                <p class="auth-switch">
-                    還沒有帳號？<a href="#" id="show-register">立即註冊</a>
-                </p>
+                <p class="auth-switch">還沒有帳號？<a href="#" id="show-register">立即註冊</a></p>
             </div>
-            
-            <!-- 註冊表單 -->
             <div class="auth-form hidden" id="register-form-container">
                 <h2>創建帳號</h2>
-                <p class="auth-subtitle">加入 DORA 開始遊戲之旅</p>
                 <form id="register-form">
                     <div class="form-group">
                         <label for="register-email">電子郵件</label>
@@ -480,14 +303,12 @@
                     <p class="auth-error" id="register-error"></p>
                     <button type="submit" class="auth-btn">註冊</button>
                 </form>
-                <p class="auth-switch">
-                    已有帳號？<a href="#" id="show-login">立即登入</a>
-                </p>
+                <p class="auth-switch">已有帳號？<a href="#" id="show-login">立即登入</a></p>
             </div>
         </div>
     </div>
 
-    <!-- 用戶中心彈窗 -->
+    <!-- 用戶中心彈窗 (保留原有功能) -->
     <div class="user-modal" id="user-modal">
         <div class="user-modal-overlay"></div>
         <div class="user-modal-content">
@@ -504,14 +325,10 @@
                     <span class="user-role" id="user-role-display">會員</span>
                 </div>
             </div>
-            
-            <!-- 標籤頁 -->
             <div class="user-tabs">
                 <button class="user-tab active" data-tab="redeem">兌換卡密</button>
                 <button class="user-tab" data-tab="orders">我的訂單</button>
             </div>
-            
-            <!-- 兌換卡密 -->
             <div class="user-tab-content" id="tab-redeem">
                 <form id="redeem-form">
                     <div class="form-group">
@@ -523,19 +340,38 @@
                     <button type="submit" class="auth-btn">兌換</button>
                 </form>
             </div>
-            
-            <!-- 我的訂單 -->
             <div class="user-tab-content hidden" id="tab-orders">
-                <div class="orders-list" id="orders-list">
-                    <p class="no-orders">載入中...</p>
-                </div>
+                <div class="orders-list" id="orders-list"><p class="no-orders">載入中...</p></div>
             </div>
-            
             <button class="logout-btn" id="logout-btn">登出</button>
         </div>
     </div>
 
     <script src="js/main.js"></script>
+    <script>
+        // 门户特有逻辑：覆盖 loadSiteConfig 以适应门户布局
+        const originalLoadSiteConfig = window.loadSiteConfig;
+        window.loadSiteConfig = async function() {
+            try {
+                const res = await fetch('/api/config');
+                if (!res.ok) return;
+                const config = await res.json();
+                
+                if (config.siteName) {
+                    document.getElementById('portal-logo').textContent = config.siteName;
+                    document.title = `${config.siteName} - PORTAL`;
+                }
+                if (config.siteTagline) {
+                    document.getElementById('portal-tagline').textContent = config.siteTagline;
+                }
+                if (config.footerCopyright) {
+                    document.getElementById('footer-copyright').innerHTML = config.footerCopyright;
+                }
+                if (config.discordUrl) {
+                    document.getElementById('discord-link').href = config.discordUrl;
+                }
+            } catch (e) { console.error(e); }
+        };
+    </script>
 </body>
 </html>
-
